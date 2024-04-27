@@ -25,6 +25,8 @@
             docker-compose
             gcc
             go
+            go-outline
+            go-tools
             golangci-lint
             gopls
             goreleaser
@@ -36,6 +38,7 @@
             protoc-gen-go-grpc
           ];
         };
+        formatter = pkgs.alejandra;
       };
     };
 }
