@@ -22,6 +22,7 @@ type s3Options struct {
 	blobAddr          string                        // address for the blob store to connect to
 	s3url             string                        // base url of the s3 to collect from
 	s3bucket          string                        // name of bucket to collect from
+	s3path            string                        // path to s3 folder with documents to collect
 	s3item            string                        // s3 item (only for non-polling behaviour)
 	region            string                        // AWS region, for s3/sqs configuration (defaults to us-east-1)
 	queues            string                        // comma-separated list of queues/topics (only for polling behaviour)
@@ -52,6 +53,10 @@ Ingest:
 $ guacone collect s3 --s3-url https://play.min.io --s3-bucket guac-test
 $ guacone collect s3 --s3-url play.min.io --s3-bucket guac-test --s3-item alpine-cyclonedx.json
 
+Ingest from AWS using default url:
+
+$ guacone collect s3 --s3-bucket guac-test --s3-region eu-north-1
+
 For the polling option, you need to define event bus endpoint for bucket notifications:
 
 $ guacone collect s3 --s3-url http://localhost:9000 --s3-bucket guac-test --poll --s3-mp-endpoint localhost:9092 --s3-queues sboms
@@ -68,6 +73,7 @@ $ guacone collect s3 --s3-url http://localhost:9000 --s3-bucket guac-test --poll
 			viper.GetString("csub-addr"),
 			viper.GetString("s3-url"),
 			viper.GetString("s3-bucket"),
+			viper.GetString("s3-path"),
 			viper.GetString("s3-region"),
 			viper.GetString("s3-item"),
 			viper.GetString("s3-mp"),
@@ -90,6 +96,7 @@ $ guacone collect s3 --s3-url http://localhost:9000 --s3-bucket guac-test --poll
 			S3Url:                   s3Opts.s3url,
 			S3Bucket:                s3Opts.s3bucket,
 			S3Region:                s3Opts.region,
+			S3Path:                  s3Opts.s3path,
 			S3Item:                  s3Opts.s3item,
 			MessageProvider:         s3Opts.mp,
 			MessageProviderEndpoint: s3Opts.mpEndpoint,
@@ -120,6 +127,7 @@ func validateS3Opts(
 	csubAddr,
 	s3url,
 	s3bucket,
+	s3path,
 	region,
 	s3item,
 	mp,
@@ -156,6 +164,7 @@ func validateS3Opts(
 		blobAddr:          blobAddr,
 		s3url:             s3url,
 		s3bucket:          s3bucket,
+		s3path:            s3path,
 		s3item:            s3item,
 		region:            region,
 		queues:            queues,
@@ -170,7 +179,7 @@ func validateS3Opts(
 }
 
 func init() {
-	set, err := cli.BuildFlags([]string{"s3-url", "s3-bucket", "s3-item", "s3-region", "s3-queues", "s3-mp", "s3-mp-endpoint"})
+	set, err := cli.BuildFlags([]string{"s3-url", "s3-bucket", "s3-path", "s3-item", "s3-region", "s3-queues", "s3-mp", "s3-mp-endpoint"})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to setup flag: %v", err)
 		os.Exit(1)
